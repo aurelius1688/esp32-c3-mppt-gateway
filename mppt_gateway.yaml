@@ -1,0 +1,306 @@
+esphome:
+  name: mppt-gateway
+  friendly_name: "MPPT Gateway"
+  libraries:
+    - "WiFi"
+  includes:
+    - components/mppt_udp_client.h
+
+esp32:
+  board: esp32-c3-devkitc-02
+  framework:
+    type: arduino
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  ap:
+    ssid: "MPPT-Gateway-Setup"
+    password: "12345678"
+
+captive_portal:
+
+web_server:
+  port: 80
+
+logger:
+  baud_rate: 115200
+  level: DEBUG
+
+api:
+  port: 6053
+  encryption:
+    key: !secret api_key
+
+ota:
+  - platform: esphome
+    password: !secret ota_password
+
+time:
+  - platform: sntp
+    id: sntp_time
+    timezone: "Asia/Shanghai"
+
+interval:
+  # UDP 轮询：每100ms检查一次UDP数据
+  - interval: 100ms
+    then:
+      - lambda: |-
+          if (!mppt_udp.is_initialized()) {
+            mppt_udp.begin("192.168.1.160", 2333);  // 替换为你的MPPT控制器IP
+          }
+          mppt_udp.loop();
+
+  # 传感器更新：每2秒将数据推送到HA
+  - interval: 2s
+    then:
+      - lambda: |-
+          if (mppt_udp.is_connected()) {
+            id(mppt_voltage_in) = mppt_udp.get_voltage_in();
+            id(mppt_current_in) = mppt_udp.get_current_in();
+            id(mppt_power_in) = mppt_udp.get_power_in();
+            id(mppt_voltage_out) = mppt_udp.get_voltage_out();
+            id(mppt_current_out) = mppt_udp.get_current_out();
+            id(mppt_power_out) = mppt_udp.get_power_out();
+            id(mppt_temp) = mppt_udp.get_temperature();
+            id(mppt_bat_pct) = mppt_udp.get_battery_pct();
+            id(mppt_wh) = mppt_udp.get_wh();
+            id(mppt_pwm) = mppt_udp.get_pwm();
+            id(mppt_ppwm) = mppt_udp.get_ppwm();
+            id(mppt_pwmc) = mppt_udp.get_pwmc();
+            id(mppt_err) = mppt_udp.get_error_code();
+            id(mppt_buck) = mppt_udp.get_buck_status() > 0;
+            id(mppt_fan) = mppt_udp.get_fan_status() > 0;
+            id(mppt_connected) = true;
+          } else {
+            id(mppt_connected) = false;
+          }
+
+globals:
+  - id: mppt_voltage_in
+    type: float
+    initial_value: '0.0'
+  - id: mppt_current_in
+    type: float
+    initial_value: '0.0'
+  - id: mppt_power_in
+    type: float
+    initial_value: '0.0'
+  - id: mppt_voltage_out
+    type: float
+    initial_value: '0.0'
+  - id: mppt_current_out
+    type: float
+    initial_value: '0.0'
+  - id: mppt_power_out
+    type: float
+    initial_value: '0.0'
+  - id: mppt_temp
+    type: float
+    initial_value: '0.0'
+  - id: mppt_bat_pct
+    type: float
+    initial_value: '0.0'
+  - id: mppt_wh
+    type: float
+    initial_value: '0.0'
+  - id: mppt_pwm
+    type: float
+    initial_value: '0.0'
+  - id: mppt_ppwm
+    type: float
+    initial_value: '0.0'
+  - id: mppt_pwmc
+    type: float
+    initial_value: '0.0'
+  - id: mppt_err
+    type: float
+    initial_value: '0.0'
+  - id: mppt_buck
+    type: bool
+    initial_value: 'false'
+  - id: mppt_fan
+    type: bool
+    initial_value: 'false'
+  - id: mppt_connected
+    type: bool
+    initial_value: 'false'
+
+text:
+  # 可在HA中动态修改MPPT控制器IP地址
+  - platform: template
+    name: "MPPT IP Address"
+    id: mppt_ip_address
+    icon: "mdi:ip-network"
+    mode: "text"
+    optimistic: true
+    min_length: 7
+    max_length: 15
+    initial_value: "192.168.1.160"
+    set_action:
+      - lambda: |-
+          ESP_LOGI("mppt_ip", "New IP: %s", x.c_str());
+          mppt_udp.begin(x.c_str(), 2333);
+          id(mppt_ip_address).publish_state(x);
+
+sensor:
+  - platform: template
+    name: "Solar Voltage"
+    unit_of_measurement: "V"
+    accuracy_decimals: 2
+    icon: "mdi:solar-power"
+    lambda: "return id(mppt_voltage_in);"
+    update_interval: 5s
+  - platform: template
+    name: "Solar Current"
+    unit_of_measurement: "A"
+    accuracy_decimals: 2
+    icon: "mdi:current-ac"
+    lambda: "return id(mppt_current_in);"
+    update_interval: 5s
+  - platform: template
+    name: "Solar Power"
+    unit_of_measurement: "W"
+    accuracy_decimals: 2
+    icon: "mdi:solar-power"
+    lambda: "return id(mppt_power_in);"
+    update_interval: 5s
+  - platform: template
+    name: "Battery Voltage"
+    unit_of_measurement: "V"
+    accuracy_decimals: 2
+    icon: "mdi:battery"
+    lambda: "return id(mppt_voltage_out);"
+    update_interval: 5s
+  - platform: template
+    name: "Battery Current"
+    unit_of_measurement: "A"
+    accuracy_decimals: 2
+    icon: "mdi:current-ac"
+    lambda: "return id(mppt_current_out);"
+    update_interval: 5s
+  - platform: template
+    name: "Battery Power"
+    unit_of_measurement: "W"
+    accuracy_decimals: 2
+    icon: "mdi:battery-charging"
+    lambda: "return id(mppt_power_out);"
+    update_interval: 5s
+  - platform: template
+    name: "Loop Time"
+    unit_of_measurement: "ms"
+    accuracy_decimals: 1
+    icon: "mdi:timeline"
+    lambda: "return id(mppt_temp);"
+    update_interval: 5s
+  - platform: template
+    name: "PWM Value"
+    accuracy_decimals: 0
+    lambda: "return id(mppt_pwm);"
+    update_interval: 5s
+    entity_category: "diagnostic"
+  - platform: template
+    name: "PPWM Value"
+    accuracy_decimals: 0
+    lambda: "return id(mppt_ppwm);"
+    update_interval: 5s
+    entity_category: "diagnostic"
+  - platform: template
+    name: "PWMC Value"
+    accuracy_decimals: 0
+    lambda: "return id(mppt_pwmc);"
+    update_interval: 5s
+    entity_category: "diagnostic"
+  - platform: template
+    name: "Error Code"
+    accuracy_decimals: 0
+    lambda: "return id(mppt_err);"
+    update_interval: 5s
+  - platform: template
+    name: "Battery Efficiency"
+    unit_of_measurement: "%"
+    accuracy_decimals: 1
+    icon: "mdi:lightning-bolt"
+    lambda: |-
+      float pi = id(mppt_power_in);
+      if (pi > 0) return (id(mppt_power_out) / pi) * 100.0;
+      return 0;
+    update_interval: 5s
+
+binary_sensor:
+  - platform: template
+    name: "Charging Status"
+    icon: "mdi:battery-charging"
+    lambda: "return id(mppt_buck);"
+  - platform: template
+    name: "Fan Status"
+    icon: "mdi:fan"
+    lambda: "return id(mppt_fan);"
+  - platform: template
+    name: "MPPT Connected"
+    icon: "mdi:lan-connect"
+    lambda: "return id(mppt_connected);"
+
+text_sensor:
+  - platform: template
+    name: "MPPT Status"
+    icon: "mdi:solar-power"
+    lambda: |-
+      if (!id(mppt_connected)) return std::string("Disconnected");
+      if (id(mppt_err) > 0) return std::string("Error: ") + to_string((int)id(mppt_err));
+      if (id(mppt_buck)) return std::string("Charging");
+      return std::string("Idle");
+    update_interval: 5s
+  - platform: wifi_info
+    ip_address:
+      name: "Gateway IP Address"
+
+button:
+  - platform: template
+    name: "Reconnect MPPT"
+    icon: "mdi:lan-connect"
+    on_press:
+      - lambda: |-
+          mppt_udp.send_cmd("START1");
+
+switch:
+  - platform: template
+    name: "MPPT Start"
+    icon: "mdi:play"
+    optimistic: true
+    turn_on_action:
+      - lambda: |-
+          mppt_udp.send_cmd("START1");
+    turn_off_action:
+      - lambda: |-
+          mppt_udp.send_cmd("START0");
+
+number:
+  - platform: template
+    name: "Max Battery Voltage"
+    unit_of_measurement: "V"
+    icon: "mdi:battery-arrow-up"
+    min_value: 3.0
+    max_value: 60.0
+    step: 0.1
+    initial_value: 14.6
+    optimistic: true
+    set_action:
+      - lambda: |-
+          char cmd[32];
+          snprintf(cmd, sizeof(cmd), "VMAX%.1f", x);
+          mppt_udp.send_cmd(cmd);
+  - platform: template
+    name: "Charging Current"
+    unit_of_measurement: "A"
+    icon: "mdi:current-ac"
+    min_value: 0.0
+    max_value: 50.0
+    step: 0.1
+    initial_value: 20.0
+    optimistic: true
+    set_action:
+      - lambda: |-
+          char cmd[32];
+          snprintf(cmd, sizeof(cmd), "IMAX%.1f", x);
+          mppt_udp.send_cmd(cmd);
