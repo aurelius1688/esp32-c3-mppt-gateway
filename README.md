@@ -82,7 +82,7 @@ rnfa0.00,rnfb0.00,P1985.00,PP1985.00,PC4.00,PI0.00,VI0.04,CI-0.07,PO0.78,VO13.14
 ### 1. 克隆/下载本项目
 
 ```bash
-git clone https://github.com/your-username/esp32-mppt-c3-gateway.git
+git clone [https://github.com/your-username/esp32-mppt-c3-gateway.git](https://github.com/aurelius1688/esp32-c3-mppt-gateway.git)
 cd esp32-mppt-c3-gateway
 ```
 
