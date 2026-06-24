@@ -2,12 +2,12 @@
 
 通过 ESP32-C3 作为 UDP 网关，将 MPPT 太阳能控制器的实时数据接入 Home Assistant (ESPHome)。
 
-示例图片1:<img width="438" height="776" alt="Snipaste_2026-06-23_22-55-42" src="https://github.com/user-attachments/assets/c12cef58-0e84-4c34-b764-f90f06c717aa" />
+<img width="438" height="776" alt="Snipaste_2026-06-23_22-55-42" src="https://github.com/user-attachments/assets/c12cef58-0e84-4c34-b764-f90f06c717aa" />
 
 
 ## 项目背景
 
-示例图片2:<img width="450" height="772" alt="Snipaste_2026-06-23_22-55-55" src="https://github.com/user-attachments/assets/f12f1741-b2b3-4b08-957f-5157dcc78eb3" />
+
 MPPT 太阳能控制器（基于 ESP32）通过 I2C 总线读取 INA226 电流/电压传感器，获取太阳能板输入和电池输出的电压、电流、功率数据。控制器自身通过 WiFi UDP 广播这些数据（端口 2333）。
 
 本项目用 **ESP32-C3** 作为 UDP 客户端接收这些数据，通过 **ESPHome** 转发到 **Home Assistant**，实现太阳能系统的远程监控。
