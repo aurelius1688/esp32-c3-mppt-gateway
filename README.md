@@ -1,6 +1,6 @@
 # ESP32-C3 MPPT Gateway
 
-通过 ESP32-C3 作为 UDP 网关，将 MPPT 太阳能控制器的实时数据接入 Home Assistant (ESPHome)。
+通过 ESP32-C3 作为 UDP 网关，将 MPPT 太阳能控制器(PCB版本V6.3 固件版本:OTA_esp32_buck_boost_V3.5.66.bin)的实时数据接入 Home Assistant (ESPHome)。
 
 <img width="438" height="776" alt="Snipaste_2026-06-23_22-55-42" src="https://github.com/user-attachments/assets/c12cef58-0e84-4c34-b764-f90f06c717aa" />
 
