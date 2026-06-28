@@ -8,7 +8,7 @@
 ## 项目背景
 
 
-MPPT 太阳能控制器（基于 ESP32）通过 I2C 总线读取 INA226 电流/电压传感器，获取太阳能板输入和电池输出的电压、电流、功率数据。控制器自身通过 WiFi UDP 广播这些数据（端口 2333）。
+MPPT 太阳能控制器（基于 ESP32 地址:https://gitee.com/muyan3000/esp32-mppt/tree/master?svcp_stk=1_iBumqFN7s_AMHSkE4UYmAtj_kj6eWDeuZd6ZNqbCnayyWWW5d30Yz1fIxAU3h_CuaK17TD_8x3SDS0Vs2r9xuEGNwtyC8OY0bpluMd8WFLt7_zs9WAEfWZSWMAyQUY_yxa-s51FJ8cmymItREStryLPwjC0QX_znUlfMC8LIQJbHaJ0YRIfMbYK8aBpvJk4bGu5FYrC_RvyNmFeA-g-FiA%3D%3D）通过 I2C 总线读取 INA226 电流/电压传感器，获取太阳能板输入和电池输出的电压、电流、功率数据。控制器自身通过 WiFi UDP 广播这些数据（端口 2333）。
 
 本项目用 **ESP32-C3** 作为 UDP 客户端接收这些数据，通过 **ESPHome** 转发到 **Home Assistant**，实现太阳能系统的远程监控。
 
