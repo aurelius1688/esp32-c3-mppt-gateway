@@ -253,5 +253,5 @@ A: 可以，在 `mppt_gateway.yaml` 中修改 `interval: 2s` 的数值即可。
 
 MIT
 
-##感谢
+## 感谢
 [ESP32-MPPT 开源项目](https://gitee.com/muyan3000/esp32-mppt/tree/master?svcp_stk=1_iBumqFN7s_AMHSkE4UYmAtj_kj6eWDeuZd6ZNqbCnayyWWW5d30Yz1fIxAU3h_CuaK17TD_8x3SDS0Vs2r9xuEGNwtyC8OY0bpluMd8WFLt7_zs9WAEfWZSWMAyQUY_yxa-s51FJ8cmymItREStryLPwjC0QX_znUlfMC8LIQJbHaJ0YRIfMbYK8aBpvJk4bGu5FYrC_RvyNmFeA-g-FiA==)
